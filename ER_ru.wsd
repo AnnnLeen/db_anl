@@ -1,0 +1,149 @@
+@startuml
+
+@startuml
+entity "Справочник сотрудников" as EmployeeDirectory {
+<PK>id_сотрудника: string
+--
+фамилия: string
+имя: string
+отчество: string
+дата_рождения: date
+подразделение: string
+логин: string
+пароль: string
+роль: string
+рабочий_телефон: string
+личный_телефон: string
+электронная_почта: string
+ИНН: string
+СНИЛС: string
+дата_приема: date
+гражданство: string
+
+<FK>id_паспорта: string
+<FK>id_должности: string
+}
+
+entity "Паспорт РФ" as RussianPassport {
+<PK>id_паспорта: string
+--
+серия: string
+номер: string
+адрес_прописки: string
+}
+
+entity "Загранпаспорт" as ForeignPassport {
+<PK>id_загранпаспорта: string
+--
+серия: string
+номер: string
+адрес_прописки: string
+действителен_до: date
+}
+
+entity "Справочник должностей" as PostDirectory {
+<PK>id_должности: string
+--
+название: string
+описание: string
+уровень_квалификации: string
+код_ОКЗ: string
+должностные_обязанности: string
+статус_вакансии: bool (true - открыта, false - закрыта)
+}
+
+entity "Справочник ставок" as PayDirectory {
+<PK>id_ставки: string
+--
+название: string (например, "оклад")
+тип: string (например, "почасовая")
+размер: string
+валюта: string
+периодичность: string (например, "ежемесячно")
+
+<FK>id_должности: string
+}
+
+entity "Справочник количества часов" as WorktimeDirectory {
+<PK>id_количества_часов: string
+--
+количество_часов: int
+тип_занятости: string (например, "полная", "почасовая")
+
+<FK>id_должности: string
+}
+
+entity "Учёт рабочего времени" as WorkLog {
+<PK>id_записи: string
+--
+дата: date
+время_начала: time
+время_окончания: time
+переработка: int
+недоработка: int
+
+<FK>id_сотрудника: string
+}
+
+entity "Шаблон расписания" as ScheduleTemplate {
+<PK>id_шаблона: string
+--
+день_недели: string
+время_начала: time
+время_окончания: time
+
+<FK>id_должности: string
+}
+
+entity "Еженедельный отчет" as WeeklyReport {
+<PK>id_отчета: string
+--
+дата_создания: date
+подтверждено: boolean
+примечания: string
+
+<FK>id_сотрудника: string
+}
+
+entity "Отпуск и больничный" as Leave {
+<PK>id_отпуска: string
+--
+дата_начала: date
+дата_окончания: date
+тип: string (например, "отпуск", "больничный")
+подтверждающий_документ: string
+подтверждено: boolean
+}
+
+entity "Справочник контактных лиц контрагентов" as AgentDirectory {
+<PK>id_контрагента: string
+--
+фамилия: string
+имя: string
+отчество: string
+должность: string
+телефон: string
+электронная_почта: string
+
+<FK>код_контр
+// пойдет к "Справочник контрагентов"
+}
+
+
+
+
+EmployeeDirectory ||--o| RussianPassport
+EmployeeDirectory ||--o| ForeignPassport
+
+EmployeeDirectory }--|| PostDirectory
+
+PostDirectory }--|| PayDirectory
+PostDirectory }--|| WorktimeDirectory 
+
+EmployeeDirectory ||--{ WorkLog
+PostDirectory ||--o{ ScheduleTemplate
+EmployeeDirectory ||--o{ WeeklyReport
+EmployeeDirectory ||--o{ Leave
+
+
+@enduml

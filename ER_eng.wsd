@@ -1,0 +1,410 @@
+@startuml
+skinparam  class {
+BackgroundColor<<personnel>> #A9DCDF
+BackgroundColor<<product>> #a9dfac
+BackgroundColor<<price>> #bfbfbf
+BackgroundColor<<free>> #d1cd7d
+}
+
+entity "Price list" as price<<price>>{
+<PK>id_price_list: SERIAL
+--
+<FK>id_product: INT
+<FK>id_store: INT
+entrance_price: NUMERIC(10, 2)
+final_price: NUMERIC(10, 2)
+price_type: SMALLINT (0 - регулярная цена, 1 - уценка, 2 - акция)
+<FK>id_promotion: INT
+date_create: TIMESTAMP
+date_end: TIMESTAMP
+}
+
+entity "Promotion catalogue" as auc<<price>>{
+<PK>id_promotion: SERIAL
+--
+name: VARCHAR(255)
+}
+
+entity "Product category" as kat<<price>>{
+<PK>id_category: SERIAL
+--
+<FK>id_category_markup: INT
+name: VARCHAR(255)
+}
+
+entity "Markup category" as nac<<price>>{
+<PK>id_category_markup: SERIAL
+--
+percent_markup: NUMERIC(5, 2)
+percent_delta: NUMERIC(5, 2)
+date_change: TIMESTAMP
+}
+
+entity "Unit" as ed<<price>>{
+<PK>id_unit: SERIAL
+--
+name: VARCHAR(255)
+}
+
+entity "Country catalogue" as country<<free>>{
+<PK>id_country: SERIAL
+--
+name: VARCHAR(255)
+}
+
+entity "Manufacturer catalogue" as sup<<free>>{
+<PK>id_manufacturer: SERIAL
+--
+<FK>id_country: INT
+name_ru: VARCHAR(255)
+name_eng: VARCHAR(255)
+INN: VARCHAR(12)
+}
+
+entity "Product card" as card<<free>>{
+<PK>id_product: SERIAL
+--
+name: VARCHAR(255)
+<FK>id_manufacturer: INT
+<FK>id_category: INT
+<FK>id_unit: INT
+
+height: NUMERIC(10, 2)
+width: NUMERIC(10, 2)
+length: NUMERIC(10, 2)
+
+expiration_date: TIMESTAMP
+SKU: VARCHAR(32)
+barcode_number: VARCHAR(13)
+}
+
+entity "Acceptance" as accept<<product>>{
+<PK>id_acceptance: SERIAL
+--
+<FK>id_employee: INT
+<FK>id_contract: INT
+<FK>id_truck: INT
+<FK>id_place: INT
+
+date_create: TIMESTAMP
+status: VARCHAR(20) (в обработке, обработано)
+}
+
+entity "Acceptance of goods" as accept_goods<<product>>{
+<PK>id_accept_good: SERIAL
+--
+<FK>id_acceptance: INT
+<FK>id_product: INT
+
+quantity: INT
+date_create: TIMESTAMP
+is_match: BOOLEAN
+comment: TEXT
+}
+
+entity "Inventory" as inventory<<product>>{
+<PK>id_inventory: SERIAL
+--
+<FK>id_point: INT
+<FK>id_employee: INT
+
+date_create: TIMESTAMP
+}
+
+entity "Inventory result" as inventory_res<<product>>{
+<PK>id_inventory_result: SERIAL
+--
+<FK>id_inventory: INT
+<FK>id_product: INT
+
+quantity: INT
+delta: INT
+}
+
+entity "Truck catalogue" as truck<<free>>{
+<PK>id_truck: SERIAL
+--
+<FK>id_car: INT
+<FK>id_driver: INT
+<FK>id_storage: INT
+}
+
+entity "Contract" as pact<<product>>{
+<PK>id_contract: SERIAL
+--
+<FK>id_point: INT
+<FK>id_driver: INT
+<FK>id_contractor: INT
+
+date_create: TIMESTAMP
+}
+
+entity "Product in contract" as pact_goods<<product>>{
+<PK>id_product_contract: SERIAL
+--
+<FK>id_contract: INT
+<FK>id_product: INT
+
+price: NUMERIC(10, 2)
+date_delivery: DATE
+quantity: INT
+}
+
+entity "Moving" as move<<product>>{
+<PK>id_moving: SERIAL
+--
+<FK>id_product: INT
+<FK>id_initial_place: INT
+<FK>id_target_place: INT
+<FK>id_initial_shelf: INT
+<FK>id_target_shelf: INT
+
+date_move: TIMESTAMP
+type: ENUM('приход', 'расход')
+quantity: INT
+}
+
+entity "White off" as write_off<<product>>{
+<PK>id_white_off: SERIAL
+--
+<FK>id_product: INT
+<FK>id_accept_good: INT
+<FK>id_employee: INT
+<FK>id_place: INT
+<FK>id_product_shelf: INT
+
+date_create: TIMESTAMP
+quantity: INT
+reason: VARCHAR(255)
+comment: TEXT
+}
+
+entity "Type point catalogue" as point_type<<free>>{
+<PK>id_type_point: SERIAL
+--
+name: VARCHAR(255)
+}
+
+entity "Point" as point<<free>>{
+<PK>id_point: SERIAL
+--
+name: VARCHAR(255)
+address: VARCHAR(255)
+}
+
+entity "Place catalogue" as storage<<free>>{
+<PK>id_place: SERIAL
+--
+<FK>id_point: INT
+<FK>id_type_point: INT
+
+activity: VARCHAR(255)
+}
+
+entity "Shelf" as polka<<product>>{
+<PK>id_shelf: SERIAL
+--
+hall_number: INT
+department_number: INT
+type: ENUM('обычная', 'холодильник')
+<FK>id_place: INT
+}
+
+entity "Product on shelf" as poltov<<product>>{
+<PK>id_product_shelf: SERIAL
+--
+<FK>id_product: INT
+<FK>id_shelf: INT
+<FK>id_price_list: INT
+quantity: INT
+automarkdown_status: VARCHAR(20)
+}
+
+entity "Sale" as sale<<product>>{
+<PK>id_sale: SERIAL
+--
+<FK>id_employee: INT
+<FK>id_product: INT
+
+date_sale: TIMESTAMP
+quantity: INT
+}
+
+entity "Employee catalogue" as EmployeeDirectory<<free>>{
+<PK>id_employee: SERIAL
+--
+surname: VARCHAR(255)
+name: VARCHAR(255)
+patronymic: VARCHAR(255)
+birth: DATE
+subdivision: VARCHAR(255)
+login: VARCHAR(255)
+password: VARCHAR(255)
+role: VARCHAR(50)
+work_number: VARCHAR(20)
+personal_number: VARCHAR(20)
+email: VARCHAR(255)
+gender: ENUM('м', 'ж')
+INN: VARCHAR(12)
+SNILS: VARCHAR(11)
+date_employment: DATE
+citizenship: ENUM('РФ', 'Иностранное')
+
+<FK>id_passport: INT 
+<FK>id_post: INT
+}
+
+entity "Passport catalogue" as Passport<<free>>{
+<PK>id_passport: SERIAL
+--
+series: VARCHAR(4)
+number: VARCHAR(6)
+registration_address: VARCHAR(255)
+country: VARCHAR(255)
+valid_until: DATE
+}
+
+entity "Post catalogue" as PostDirectory<<personnel>>{
+<PK>id_post: SERIAL
+--
+name: VARCHAR(255)
+description: TEXT
+skill_level: VARCHAR(50)
+OKZ_code: VARCHAR(20)
+responsibilities: TEXT
+status: ENUM('открыта', 'закрыта')
+}
+
+entity "Rate catalogue" as PayDirectory<<personnel>>{
+<PK>id_rate: SERIAL
+--
+name: VARCHAR(255) (например, "оклад")
+type: VARCHAR(255) (например, "почасовая")
+size: NUMERIC(10, 2)
+currency: VARCHAR(3)
+periodicity: VARCHAR(255) (например, "ежемесячно")
+<FK>id_post: INT
+}
+
+entity "Worktime catalogue" as WorktimeDirectory<<personnel>>{
+<PK>id_worktime: SERIAL
+--
+hours_count: NUMERIC(5, 2)
+type_employment: VARCHAR(255) (например, "полная", "почасовая")
+<FK>id_post: INT
+}
+
+entity "Worklog" as WorkLog<<personnel>>{
+<PK>id_worklog: SERIAL
+--
+date_start: DATE
+date_end: DATE
+time_start: TIME
+time_end: TIME
+overtime: NUMERIC(5, 2)
+undertime: NUMERIC(5, 2)
+<FK>id_employee: INT
+}
+
+entity "Schedule template" as ScheduleTemplate<<personnel>>{
+<PK>id_template: SERIAL
+--
+day_week: INT
+time_start: TIME
+time_end: TIME
+<FK>id_post: INT
+}
+
+entity "Weekly report" as WeeklyReport<<personnel>>{
+<PK>id_weekly_report: SERIAL
+--
+date_create: TIMESTAMP
+is_confirmed: ENUM('подтвержден', 'не подтвержден')
+note: VARCHAR(255)
+<FK>id_employee: INT
+}
+
+entity "Absence" as Leave<<personnel>>{
+<PK>id_absence: SERIAL
+--
+date_start: DATE
+date_end: DATE
+type: VARCHAR(255) (например, "отпуск", "больничный")
+supporting_document: VARCHAR(255)
+is_confirmed: BOOLEAN
+<FK>id_employee: INT
+}
+
+entity "Contact catalogue" as contr<<free>>{
+<PK>id_contact: SERIAL
+--
+surname: VARCHAR(255)
+name: VARCHAR(255)
+patronymic: VARCHAR(255)
+post: VARCHAR(255)
+phone: VARCHAR(20)
+email: VARCHAR(255)
+<FK>id_contractor: INT
+}
+
+entity "Contractor catalogue" as post<<free>>{
+<PK>id_contractor: SERIAL
+--
+company_name: VARCHAR(255)
+legal_address: TEXT
+actual_address: TEXT
+INN: CHAR(10)
+OGRN: CHAR(13)
+ownership_form: VARCHAR(20)
+site: VARCHAR(255)
+email: VARCHAR(255)
+}
+
+card ||--|| kat: id_category
+card ||--|| ed: id_unit
+card ||--|| sup: id_manufacturer
+sup ||--|| country: id_country
+polka ||--|{ poltov: id_shelf
+poltov }|--|| card: id_product
+price ||--||poltov: id_price_list
+price ||--o| auc: id_promotion
+nac ||--|| kat: id_category_markup
+
+truck ||--|{ accept: id_truck
+accept ||--|{ accept_goods: id_acceptance
+accept }|--|| storage: id_place
+pact ||--|{ accept: id_contact
+pact ||--|{ post: id_contactor
+post ||--|{ contr: id_contactor
+pact }|--|| point: id_point
+pact ||--|{ pact_goods: id_contract
+pact_goods }|--|| card: id_product
+accept_goods }|--|| card: id_product
+move }|--|| card: id_product
+move }|--|| polka: id_shelf
+write_off }|--|| card: id_product
+write_off }|--|| poltov: id_product_shelf
+write_off }|--|| storage: id_place
+write_off }|--|| accept_goods: id_accept_good
+sale ||--|{ card: id_product
+storage ||--|| point_type: id_type_point
+storage ||--|| point: id_point
+storage ||--|{ polka: id_place
+inventory }|--|| point: id_point
+inventory_res }|--|| inventory: id_inventory
+inventory_res }|--|| card: id_product
+
+EmployeeDirectory ||--|| sale: id_employee
+EmployeeDirectory ||--|| inventory: id_employee
+EmployeeDirectory ||--|| write_off: id_employee
+
+EmployeeDirectory ||--o| Passport: id_passport
+EmployeeDirectory }--|| PostDirectory: id_post
+PostDirectory }--|| PayDirectory: id_post
+PostDirectory }--|| WorktimeDirectory: id_post
+EmployeeDirectory ||--{ WorkLog: id_employee
+PostDirectory ||--o{ ScheduleTemplate: id_post
+EmployeeDirectory ||--o{ WeeklyReport: id_employee
+EmployeeDirectory ||--o{ Leave: id_employee
+
+@enduml
