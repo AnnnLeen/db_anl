@@ -241,12 +241,12 @@ subdivision: VARCHAR(255)
 login: VARCHAR(255)
 password: VARCHAR(255)
 role: VARCHAR(50)
-work_number: VARCHAR(20)
-personal_number: VARCHAR(20)
+work_number: CHAR(9)
+personal_number: CHAR(15)
 email: VARCHAR(255)
 gender: ENUM('м', 'ж')
-INN: VARCHAR(12)
-SNILS: VARCHAR(11)
+INN: CHAR(12)
+SNILS: CHAR(11)
 date_employment: DATE
 citizenship: ENUM('РФ', 'Иностранное')
 
@@ -257,11 +257,10 @@ citizenship: ENUM('РФ', 'Иностранное')
 entity "Passport catalogue" as Passport<<free>>{
 <PK>id_passport: SERIAL
 --
-series: VARCHAR(4)
-number: VARCHAR(6)
+series: CHAR(4)
+number: CHAR(6)
 registration_address: VARCHAR(255)
-country: VARCHAR(255)
-valid_until: DATE
+country: CHAR(2)
 }
 
 entity "Post catalogue" as PostDirectory<<personnel>>{
@@ -269,20 +268,19 @@ entity "Post catalogue" as PostDirectory<<personnel>>{
 --
 name: VARCHAR(255)
 description: TEXT
-skill_level: VARCHAR(50)
-OKZ_code: VARCHAR(20)
+skill_level: ENUM('низкий', 'средний', 'высокий')
+OKZ_code: CHAR(7)
 responsibilities: TEXT
-status: ENUM('открыта', 'закрыта')
 }
 
 entity "Rate catalogue" as PayDirectory<<personnel>>{
 <PK>id_rate: SERIAL
 --
-name: VARCHAR(255) (например, "оклад")
-type: VARCHAR(255) (например, "почасовая")
+name: VARCHAR(100) (например, "оклад")
+type: VARCHAR(100) (например, "почасовая")
 size: NUMERIC(10, 2)
-currency: VARCHAR(3)
-periodicity: VARCHAR(255) (например, "ежемесячно")
+currency: ENUM('USD', 'EUR', 'RUB', 'GBP', 'JPY')
+periodicity: VARCHAR(100) (например, "ежемесячно")
 <FK>id_post: INT
 }
 
@@ -290,7 +288,10 @@ entity "Worktime catalogue" as WorktimeDirectory<<personnel>>{
 <PK>id_worktime: SERIAL
 --
 hours_count: NUMERIC(5, 2)
-type_employment: VARCHAR(255) (например, "полная", "почасовая")
+shift_count: INT
+week_start_date: DATE
+week_end_date: DATE
+comments: TEXT
 <FK>id_post: INT
 }
 
@@ -301,6 +302,7 @@ date_start: DATE
 date_end: DATE
 time_start: TIME
 time_end: TIME
+total_time: NUMERIC(5, 2)
 overtime: NUMERIC(5, 2)
 undertime: NUMERIC(5, 2)
 <FK>id_employee: INT
@@ -309,7 +311,7 @@ undertime: NUMERIC(5, 2)
 entity "Schedule template" as ScheduleTemplate<<personnel>>{
 <PK>id_template: SERIAL
 --
-day_week: INT
+day_week: ENUM('ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС')
 time_start: TIME
 time_end: TIME
 <FK>id_post: INT
@@ -320,7 +322,7 @@ entity "Weekly report" as WeeklyReport<<personnel>>{
 --
 date_create: TIMESTAMP
 is_confirmed: ENUM('подтвержден', 'не подтвержден')
-note: VARCHAR(255)
+note: TEXT
 <FK>id_employee: INT
 }
 
@@ -331,7 +333,7 @@ date_start: DATE
 date_end: DATE
 type: VARCHAR(255) (например, "отпуск", "больничный")
 supporting_document: VARCHAR(255)
-is_confirmed: BOOLEAN
+is_confirmed: ENUM('подтвержден', 'не подтвержден')
 <FK>id_employee: INT
 }
 
@@ -341,8 +343,8 @@ entity "Contact catalogue" as contr<<free>>{
 surname: VARCHAR(255)
 name: VARCHAR(255)
 patronymic: VARCHAR(255)
-post: VARCHAR(255)
-phone: VARCHAR(20)
+post: VARCHAR(100)
+phone: CHAR(15)
 email: VARCHAR(255)
 <FK>id_contractor: INT
 }
@@ -356,8 +358,8 @@ actual_address: TEXT
 INN: CHAR(10)
 OGRN: CHAR(13)
 ownership_form: VARCHAR(20)
-site: VARCHAR(255)
-email: VARCHAR(255)
+site: VARCHAR(50)
+email: VARCHAR(50)
 }
 
 card ||--|| kat: id_category
